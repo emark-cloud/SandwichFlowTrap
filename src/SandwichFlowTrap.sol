@@ -125,11 +125,11 @@ contract SandwichFlowTrap is ITrap {
     {
         if (data.length == 0 || data[0].length == 0) return (false, "");
 
-        // decode current block
+        
         BlockMetrics memory curr = abi.decode(data[0], (BlockMetrics));
         if (curr.pool == address(0)) return (false, "");
 
-        // window: look back up to last 5 samples (newest at data[0])
+       
         uint256 window = data.length < 5 ? data.length : 5;
 
         uint8 badBlocks = 0;
