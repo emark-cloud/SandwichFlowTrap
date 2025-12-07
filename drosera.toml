@@ -1,0 +1,16 @@
+ethereum_rpc = "https://rpc.mevblocker.io"
+drosera_rpc = "https://relay.ethereum.drosera.io/"
+
+[traps]
+
+[traps.sandwich_flow]
+path = "out/SandwichFlowTrap.sol/SandwichFlowTrap.json"
+contract_name = "SandwichFlowTrap"
+response_contract  = "0xA84A9948ceb7d6E373D5abC7bFE55695BDE49dF2"
+response_function  = "handle(bytes)"
+cooldown_period_blocks = 1
+block_sample_size      = 5    
+min_number_of_operators = 1
+max_number_of_operators = 5
+private_trap = true
+whitelist = ["0x8944e2090Ccbce53dEc8F503126ca04A43D8CDE2"]
