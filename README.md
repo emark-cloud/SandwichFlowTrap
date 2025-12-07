@@ -1,118 +1,71 @@
-# Drosera Trap Foundry Template
+# SandwichFlowTrap
 
-This repo is for quickly bootstrapping a new Drosera project. It includes instructions for creating your first trap, deploying it to the Drosera network, and updating it on the fly.
+## Overview
 
-[![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](https://dev.drosera.io "Project documentation")
-[![Twitter](https://img.shields.io/twitter/follow/DroseraNetwork?style=for-the-badge)](https://x.com/DroseraNetwork)
+The **SandwichFlowTrap** detects MEV sandwich attacks on a specific AMM pool by analyzing attacker patterns, victim impact, and repeated toxic order flow. It uses a feeder → trap → responder architecture and is fully Drosera-compliant.
 
-## Configure dev environment
+---
 
-```bash
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
+## What It Detects
 
-# The trap-foundry-template utilizes node modules for dependency management
-# install Bun (optional)
-curl -fsSL https://bun.sh/install | bash
+* Attacker → victim → attacker sandwich sequences
+* High victim slippage or price impact
+* Large attacker profit extracted from users
+* Repeated MEV behavior across multiple blocks
 
-# install node modules
-bun install
+---
 
-# install vscode (optional)
-# - add solidity extension JuanBlanco.solidity
+## How It Works
 
-# install drosera-cli
-curl -L https://app.drosera.io/install | bash
-droseraup
-```
+### **Feeder** (off‑chain)
 
-open the VScode preferences and Select `Soldity: Change workpace compiler version (Remote)`
+Analyzes each block and sends:
 
-Select version `0.8.12`
+* `numSandwiches`
+* `totalVictimVolume`
+* `attackerProfit`
+* `worstPriceImpactBps`
+* `attackers[]`
 
-## Quick Start
+### **Trap (on‑chain)**
 
-The following drosera commands set the `DROSERA_PRIVATE_KEY` environment variable in the command line but you can also use a `.env` file to store the private key of the account you want to use to deploy the trap.
+* `collect()` safely reads feeder metrics.
+* `shouldRespond()` evaluates a sliding window of recent blocks.
+* Triggers if:
 
-### Hello World Trap
+  * Sandwiches ≥ threshold
+  * Attacker profit is high
+  * Price impact is severe
+  * Patterns repeat across blocks
 
-The drosera.toml file is configured to deploy a simple "Hello, World!" trap. Ensure the drosera.toml file is set to the following configuration:
+Severity levels (1–3) reflect how aggressive the MEV activity is.
 
-```toml
-response_contract = "0xdA890040Af0533D98B9F5f8FE3537720ABf83B0C"
-response_function = "helloworld(string)"
-```
+### **Responder**
 
-To deploy the trap, run the following commands:
+When triggered:
 
-```bash
-# Compile the Trap
-forge build
+* Emits a `ToxicOrderflowDetected` incident
+* (Optional) Enables MEV‑protected routing or adjusts protocol parameters
 
-# Deploy the Trap
-DROSERA_PRIVATE_KEY=0x.. drosera apply
-```
+---
 
-After successfully deploying the trap, the CLI will add an `address` field to the `drosera.toml` file.
-
-Congratulations! You have successfully deployed your first trap!
-
-### Response Trap
-
-You can then update the trap by changing its logic and recompling it or changing the path field in the `drosera.toml` file to point to the Response Trap.
-
-The Response Trap is designed to trigger a response at a specific block number. To test the Response Trap, pick a future block number and update the Response Trap.
-Specify a response contract address and function signature in the drosera.toml file to the following:
+## Drosera Settings (Example)
 
 ```toml
-response_contract = "0x183D78491555cb69B68d2354F7373cc2632508C7"
-response_function = "responseCallback(uint256)"
+cooldown_period_blocks = 1
+block_sample_size = 5
+private_trap = true
+whitelist = ["0x<OPERATOR>"]
 ```
 
-Finally, deploy the Response Trap by running the following commands:
+---
 
-```bash
-# Compile the Trap
-forge build
+## Summary
 
-# Deploy the Trap
-DROSERA_PRIVATE_KEY=0x.. drosera apply
-```
+The SandwichFlowTrap provides early warning for:
 
-> Note: The `DROSERA_PRIVATE_KEY` environment variable can be used to deploy traps. You can also set it in the drosera.toml file as `private_key = "0x.."`.
+* MEV farming
+* Toxic orderflow
+* Excessive price impact
 
-
-### Transfer Event Trap
-The TransferEventTrap is an example of how a Trap can parse event logs from a block and respond to a specific ERC-20 token transfer events.
-
-To deploy the Transfer Event Trap, uncomment the `transfer_event_trap` section in the `drosera.toml` file. Add the token address to the `tokenAddress` constant in the `TransferEventTrap.sol` file and then deploy the trap.
-
-### Alert Trap
-The AlertTrap is an example of how a Trap can parse event logs from a block and alert on a specific ERC-20 token transfer events.
-
-To deploy the Alert Trap, run the following commands:
-
-```bash
-forge build
-
-DROSERA_PRIVATE_KEY=0x.. drosera -c drosera.alerts.toml.j2 apply
-```
-
-> Note: The `.j2` file extension is used to indicate that the file is a jinja template and environment variables can be used in the file by wrapping them in `{{ env.VARIABLE_NAME }}`.
-
-Once configured properly, you can test the alert integration by running the following command;
-
-```bash
-DROSERA_PRIVATE_KEY=0x.. drosera -c drosera.alerts.toml.j2 send-test-alert --trap-name alert_trap
-```
-
-This will run the tests and you should see the alert being triggered in the console.
-
-
-## Testing
-
-Example tests are included in the `tests` directory. They simulate how Drosera Operators execute traps and determine if a response should be triggered. To run the tests, execute the following command:
-
-```bash
-forge test
-```
+It helps protocols react automatically and protect users when a pool is being exploited by sandwich bots.
