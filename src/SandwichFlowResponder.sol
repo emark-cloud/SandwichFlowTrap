@@ -5,13 +5,13 @@ interface IRouteController {
     function setProtectedRouting(address pool, bool enabled) external;
 }
 
-/// @notice Responds to toxic MEV flow detections from SandwichFlowTrap.
+
 contract SandwichFlowResponder {
     address public owner;
-    address public caller; // Drosera trap-config / relayer
+    address public caller; 
     IRouteController public controller;
 
-    uint8 public severityThreshold = 1; // min severity to act
+    uint8 public severityThreshold = 1; 
 
     event ToxicOrderflowDetected(
         address indexed pool,
@@ -58,7 +58,7 @@ contract SandwichFlowResponder {
         severityThreshold = s;
     }
 
-    /// @notice Called by Drosera when SandwichFlowTrap returns (true, payload)
+  
     function handle(bytes calldata payload) external onlyCaller {
         (
             uint8 severity,
@@ -102,7 +102,7 @@ contract SandwichFlowResponder {
             )
         );
 
-        // Optional: enable protected routing for that pool
+        
         if (address(controller) != address(0)) {
             controller.setProtectedRouting(pool, true);
         }
