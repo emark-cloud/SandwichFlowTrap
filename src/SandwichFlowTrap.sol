@@ -41,7 +41,7 @@ contract SandwichFlowTrap is ITrap {
     address public owner;
 
     constructor() {
-        owner = address(0); // Drosera deploys; set owner after
+        owner = address(0); 
     }
 
     function setOwner(address newOwner) external {
