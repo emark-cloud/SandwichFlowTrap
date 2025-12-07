@@ -60,18 +60,18 @@ contract SandwichFlowTrap is ITrap {
     /*                             TUNED THRESHOLDS (CONST)                        */
     /* -------------------------------------------------------------------------- */
 
-    // sandwiches / block considered "high activity"
+   
     uint16 public constant SANDWICH_THRESHOLD = 2;
 
-    // price impact in bps (e.g. 500 = 5%)
+    
     uint16 public constant IMPACT_THRESHOLD_BPS = 500;
-    uint16 public constant SCARY_IMPACT_BPS   = 1000; // 10%
+    uint16 public constant SCARY_IMPACT_BPS   = 1000; 
 
-    // attacker profit thresholds (in stable or pool token units)
-    uint256 public constant PROFIT_THRESHOLD      = 10e18;  // "big" profit
-    uint256 public constant HUGE_PROFIT_THRESHOLD = 50e18;  // very big
+   
+    uint256 public constant PROFIT_THRESHOLD      = 10e18;  
+    uint256 public constant HUGE_PROFIT_THRESHOLD = 50e18;  
 
-    // minimum number of "bad" blocks in the recent window
+   
     uint8 public constant MIN_BAD_BLOCKS = 2;
 
     /* -------------------------------------------------------------------------- */
@@ -142,7 +142,7 @@ contract SandwichFlowTrap is ITrap {
             if (data[i].length == 0) continue;
 
             BlockMetrics memory m = abi.decode(data[i], (BlockMetrics));
-            if (m.pool != curr.pool) continue; // safety if feeder reused
+            if (m.pool != curr.pool) continue; 
 
             bool blockBad = _isBadBlock(
                 m.numSandwiches,
@@ -158,15 +158,15 @@ contract SandwichFlowTrap is ITrap {
             sumVictimVolume += m.totalVictimVolume;
         }
 
-        // require persistent pattern, not 1-off blip
+       
         if (badBlocks < MIN_BAD_BLOCKS) {
-            // But allow *extreme* single-block events to still trigger
+            
             if (!_isExtremeBlock(curr.numSandwiches, curr.attackerProfit, curr.worstPriceImpactBps)) {
                 return (false, "");
             }
         }
 
-        // severity ladder
+       
         uint8 severity = 1;
         if (
             maxSandwiches >= SANDWICH_THRESHOLD * 3 ||
