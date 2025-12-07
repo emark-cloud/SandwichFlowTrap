@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/// @notice Stores per-block MEV sandwich/toxic flow stats for a specific pool.
+
 contract SandwichFlowFeeder {
     struct BlockMetrics {
-        uint64 ts;                  // unix timestamp from operator
-        address pool;               // target AMM pool
-        uint16 numSandwiches;       // sandwiches detected in this block
-        uint256 totalVictimVolume;  // sum of victim notional (e.g. in stable units)
-        uint256 attackerProfit;     // attacker net profit in token units
-        uint16 worstPriceImpactBps; // max victim price impact in bps (1e4 = 100%)
-        address[] attackers;        // unique attacker addresses in this block
+        uint64 ts;                  
+        address pool;               
+        uint16 numSandwiches;      
+        uint256 totalVictimVolume; 
+        uint256 attackerProfit;     
+        uint16 worstPriceImpactBps; 
+        address[] attackers;       
     }
 
     address public owner;
@@ -40,7 +40,7 @@ contract SandwichFlowFeeder {
         owner = newOwner;
     }
 
-    /// @notice Called by your off-chain MEV/mempool scanner once per block (or window).
+   
     function pushMetrics(
         uint64 ts,
         address pool,
@@ -75,7 +75,7 @@ contract SandwichFlowFeeder {
         );
     }
 
-    /// @notice Read-only view used by the trap’s collect().
+  
     function getLatest()
         external
         view
